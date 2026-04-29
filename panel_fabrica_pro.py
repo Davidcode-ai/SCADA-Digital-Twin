@@ -1,3 +1,8 @@
+"""
+SCADA Digital Twin Simulator for Alberti Steelworks.
+This module simulates the physical behavior of industrial machinery (OT)
+and provides a real-time IT dashboard for monitoring and safety lock-downs.
+"""
 import customtkinter as ctk
 import time
 import random
@@ -24,6 +29,12 @@ COMANDOS_GLOBAL = {"MOTOR": {}, "HORNO": {}, "CINTA": {}}
 # PARTE 1: EL CEREBRO OT (A 30 actualizaciones por segundo)
 # =====================================================================
 def motor_fisico_invisible():
+    """
+    Background thread simulating the Operational Technology (OT) physical engine.
+    It runs at approximately 30 FPS, reading commands from shared memory (RAM)
+    and updating the telemetry (temperature, RPM, load) of the machines based on physics math.
+    It triggers destruction flags if safety thresholds are critically exceeded.
+    """
     while True:
         # 1. Procesar Órdenes directamente de la RAM
         for maq_id, cmd in COMANDOS_GLOBAL.items():
@@ -114,6 +125,11 @@ def motor_fisico_invisible():
 # PARTE 2: LA INTERFAZ SCADA (IT)
 # =====================================================================
 class SCADA_App(ctk.CTk):
+    """
+    Main Application Class representing the IT Dashboard.
+    Handles the GUI rendering, data visualization through matplotlib,
+    and the real-time interaction with the background OT physics engine.
+    """
     def __init__(self):
         super().__init__()
         self.title("SCADA SYSTEMS - INDUSTRIA 4.0")
@@ -159,6 +175,10 @@ class SCADA_App(ctk.CTk):
         self.after(1000, self.actualizar_reloj)
 
     def log_evento(self, mensaje, tipo="INFO"):
+        """
+        Appends a timestamped log entry to the system's datalogger.
+        Used for auditing critical failures and status changes.
+        """
         hora = datetime.now().strftime("%H:%M:%S")
         linea = f"[{hora}] {mensaje}\n"
         self.txt_logs.insert("end", linea)
@@ -280,8 +300,12 @@ class SCADA_App(ctk.CTk):
             self.maquina_actual = None
 
     def abrir_maquina(self, id_maquina):
+        """
+        Dynamically generates the detailed view of a specific machine.
+        It binds the control switches to the shared memory commands map.
+        """
         self.maquina_actual = id_maquina
-        self.historial_grafica = [0] * 100 # Más puntos para que la gráfica sea más larga
+        self.historial_grafica = [0] * 100 
         
         for widget in self.frame_controles.winfo_children(): widget.destroy()
         
@@ -329,6 +353,10 @@ class SCADA_App(ctk.CTk):
         COMANDOS_GLOBAL[id_maq][cmd] = bool(valor)
 
     def enviar_reset(self, id_maq):
+        """
+        Triggers a maintenance protocol. Sends a reset flag to the OT engine
+        to restore a locked-down machine to its nominal state.
+        """
         COMANDOS_GLOBAL[id_maq] = {"RESET": True}
         self.log_evento(f"Equipo de mantenimiento enviado a {id_maq}.", "REPARADO")
         self.after(200, lambda: self.limpiar_reset(id_maq))
@@ -338,6 +366,11 @@ class SCADA_App(ctk.CTk):
         COMANDOS_GLOBAL[id_maq] = {}
 
     def bucle_actualizacion(self):
+        """
+        Main GUI loop executed at 30 FPS.
+        Reads the shared memory states and updates the progress bars, 
+        matplotlib graphs, and background colors to reflect real-time telemetry.
+        """
         try:
             # 1. ACTUALIZAR MAPA Y LOGS
             alertas_activas = 0
