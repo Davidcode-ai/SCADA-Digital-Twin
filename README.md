@@ -25,4 +25,4 @@ This Open Source SCADA Digital Twin was created to solve this issue. By simulati
 3. **Data Logging:** Check the "Registro de Sucesos" (Datalogger) at the bottom of the main map to audit the exact timestamp when the failure occurred.
 
 ## 📚 Documentation
-You can find the full code documentation generated automatically here: [SCADA Digital Twin Docs](https://scada-digital-twin.vercel.app/)
+You can find the full code documentation generated automatically here: [SCADA Digital Twin Docs](https://scada-digital-twin-83cpq4gkt-davids-projects-5383b545.vercel.app/panel_fabrica_pro.html)
